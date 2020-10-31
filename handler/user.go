@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"backer-api/auth"
 	"backer-api/helper"
 	"backer-api/user"
 	"fmt"
@@ -11,10 +12,11 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authService auth.Service
 }
 
-func NewUserHandler(userSevice user.Service) *userHandler {
-	return &userHandler{userSevice}
+func NewUserHandler(userSevice user.Service, authService auth.Service) *userHandler {
+	return &userHandler{userSevice, authService}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -39,7 +41,15 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	formatter := user.FormatUser(newUser, "token123")
+	token, err := h.authService.GenerateToken(newUser.ID)
+
+	if err != nil {
+		response := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	formatter := user.FormatUser(newUser, token)
 
 	response := helper.APIResponse("Your account has been created", http.StatusOK, "success", formatter)
 
@@ -70,7 +80,15 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	formatter := user.FormatUser(loggedinUser, "token123")
+	token, err := h.authService.GenerateToken(loggedinUser.ID)
+
+	if err != nil {
+		response := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "error", nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	formatter := user.FormatUser(loggedinUser, token)
 
 	response := helper.APIResponse("You have successfully logged in", http.StatusOK, "success", formatter)
 
