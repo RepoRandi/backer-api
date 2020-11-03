@@ -2,9 +2,11 @@ package main
 
 import (
 	"backer-api/auth"
+	"backer-api/campaign"
 	"backer-api/handler"
 	"backer-api/helper"
 	"backer-api/user"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -24,6 +26,27 @@ func main() {
 	}
 
 	userRepository := user.NewRepository(db)
+
+	campaignRepository := campaign.NewRepository(db)
+
+	campaigns, err := campaignRepository.FindByUserID(1)
+
+	fmt.Println("Debug")
+	fmt.Println("Debug")
+	fmt.Println("Debug")
+	fmt.Println("Jumlah campaign: ", len(campaigns))
+	fmt.Println("==================================")
+
+	for i, c := range campaigns {
+		fmt.Println("==========")
+		fmt.Println(i+1, "-", c.Name)
+		fmt.Println("==========")
+		if len(c.CampaignImages) > 0 {
+			fmt.Println("Jumlah yg di render", len(c.CampaignImages))
+			fmt.Println(c.CampaignImages[0].FileName)
+		}
+	}
+
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
 	userHandler := handler.NewUserHandler(userService, authService)
