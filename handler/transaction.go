@@ -35,6 +35,7 @@ func (h *transactionHandler) GetCampaignTransactions(c *gin.Context) {
 		return
 	}
 
-	response := helper.APIResponse("Campaign's transactions", http.StatusOK, "success", transactions)
+	formatter := transaction.FormatCampaignTransactions(transactions)
+	response := helper.APIResponse("Campaign's transactions", http.StatusOK, "success", formatter)
 	c.JSON(http.StatusOK, response)
 }
